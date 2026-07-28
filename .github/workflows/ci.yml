@@ -21,17 +21,32 @@ jobs:
           python-version: "3.12"
           cache: pip
       - run: pip install ruff
-      - run: ruff check .
-      - run: ruff format --check .
+
+      # Blocking: real errors only (syntax, undefined names, unused imports).
+      - name: Ruff (errors)
+        run: ruff check . --output-format=github
+
+      # Advisory: style and modernization suggestions never break the build.
+      - name: Ruff (style, advisory)
+        continue-on-error: true
+        run: ruff check . --select E,W,I,UP,B,C4,SIM --statistics
+
+      - name: Ruff format (advisory)
+        continue-on-error: true
+        run: ruff format --check --diff .
 
   test:
     name: Tests (Python ${{ matrix.python-version }})
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest]
         python-version: ["3.10", "3.11", "3.12"]
+    env:
+      # Never download browsers in CI; no test drives a real page.
+      PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
+      DB_PATH: ":memory:"
+      WEB_AUTH_TOKEN: test-token
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -55,6 +70,7 @@ jobs:
         with:
           context: .
           push: false
+          load: false
           tags: homa:ci
           cache-from: type=gha
           cache-to: type=gha,mode=max

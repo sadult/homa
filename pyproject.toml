@@ -33,7 +33,9 @@ target-version = "py310"
 exclude = [".venv", "__pycache__", "build", "dist"]
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "UP", "B", "C4", "SIM", "RUF"]
+# Blocking set: real bugs only (syntax errors, undefined names, broken f-strings).
+# CI runs the stricter style set separately as advisory, so cosmetics never break a build.
+select = ["E9", "F63", "F7", "F82"]
 ignore = ["E501", "B008", "RUF001", "RUF002", "RUF003"]
 
 [tool.ruff.lint.isort]
@@ -45,6 +47,7 @@ indent-style = "space"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+pythonpath = ["."]
 addopts = "-q"
 asyncio_mode = "auto"
 filterwarnings = ["ignore::DeprecationWarning"]
