@@ -2,7 +2,7 @@
 
 # HOMA — Hands-On Machine Assistant
 # The Playwright base image ships Chromium plus every system library it needs.
-FROM mcr.microsoft.com/playwright/python:v1.47.0-jammy
+FROM mcr.microsoft.com/playwright/python:v1.61.0-jammy
 
 LABEL org.opencontainers.image.title="HOMA" \
       org.opencontainers.image.description="Self-hosted, local-first AI agent that drives a real browser, controls your computer, reads mail, remembers, and runs scheduled tasks." \
