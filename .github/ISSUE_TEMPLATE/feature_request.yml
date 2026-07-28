@@ -1,0 +1,37 @@
+name: "\u2728 Feature or plugin idea"
+description: Suggest a capability for HOMA
+title: "[feat]: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What would you like HOMA to do?
+      description: Describe it as the sentence you would actually type to the agent.
+      placeholder: "\"Every Sunday, export my bank statement and save it to Drive\""
+    validations:
+      required: true
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Type
+      options:
+        - New plugin / tool
+        - Core agent improvement
+        - Interface (Telegram / Web / CLI)
+        - Docs
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: sketch
+    attributes:
+      label: Rough design (optional)
+      description: Tool names, parameters, or the API you would call.
+      render: python
+  - type: checkboxes
+    id: risk
+    attributes:
+      label: Safety
+      options:
+        - label: This capability would write, send, delete, pay, or execute something (i.e. `dangerous=True`)

@@ -1,0 +1,50 @@
+[project]
+name = "homa"
+version = "1.1.0"
+description = "HOMA — Hands-On Machine Assistant: a self-hosted, local-first AI agent that drives a real browser, controls your computer, reads mail, remembers, and runs scheduled tasks."
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{ name = "Mersad Shahidi" }]
+keywords = [
+  "ai-agent", "autonomous-agent", "llm", "tool-calling", "browser-automation",
+  "playwright", "telegram-bot", "fastapi", "self-hosted", "local-first",
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "Natural Language :: English",
+  "Natural Language :: Persian",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Utilities",
+]
+
+[project.urls]
+Homepage = "https://github.com/sadult/homa"
+Documentation = "https://github.com/sadult/homa/tree/main/docs"
+Issues = "https://github.com/sadult/homa/issues"
+Changelog = "https://github.com/sadult/homa/blob/main/CHANGELOG.md"
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+exclude = [".venv", "__pycache__", "build", "dist"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "C4", "SIM", "RUF"]
+ignore = ["E501", "B008", "RUF001", "RUF002", "RUF003"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["core", "tools", "plugins", "security", "interfaces", "config"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+asyncio_mode = "auto"
+filterwarnings = ["ignore::DeprecationWarning"]

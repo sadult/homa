@@ -1,0 +1,16 @@
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.db binary
+
+*.sh text eol=lf
+*.bat text eol=crlf
+
+# Keep generated/vendored assets out of language stats and diffs
+assets/* linguist-documentation
+docs/* linguist-documentation
+interfaces/web/static/index.html linguist-vendored=false

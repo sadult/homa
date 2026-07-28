@@ -1,0 +1,26 @@
+services:
+  homa:
+    build: .
+    image: homa:latest
+    container_name: homa
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      # Inside a container the dashboard must bind to all interfaces;
+      # the published port below still limits access to localhost.
+      WEB_HOST: 0.0.0.0
+      HEADLESS: "true"
+    ports:
+      - "127.0.0.1:8000:8000"
+    volumes:
+      - ./homa.db:/app/homa.db
+      - ./downloads:/app/downloads
+      - ./plugins:/app/plugins
+    # Chromium needs a bigger shared memory segment than the 64MB default.
+    shm_size: "1gb"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/').status==200 else 1)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s

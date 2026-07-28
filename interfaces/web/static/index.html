@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>HOMA</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" />
+<style>
+  :root {
+    --bg:#0e0e10; --bg-soft:#151517; --panel:#18181b; --panel-2:#202024;
+    --line:rgba(255,255,255,.08); --line-2:rgba(255,255,255,.14);
+    --text:#f4f4f5; --muted:#a1a1aa; --faint:#71717a;
+    --accent:#7c5cff; --accent-2:#9b7dff; --accent-soft:rgba(124,92,255,.14);
+    --ok:#4ade80; --err:#f87171; --radius:18px;
+    --shadow:0 10px 40px -12px rgba(0,0,0,.6);
+  }
+  * { box-sizing:border-box; }
+  html,body { height:100%; }
+  body {
+    margin:0; background:
+      radial-gradient(1200px 600px at 80% -10%, rgba(124,92,255,.12), transparent 60%),
+      radial-gradient(900px 500px at 0% 110%, rgba(124,92,255,.08), transparent 55%),
+      var(--bg);
+    color:var(--text); font:15px/1.7 Vazirmatn,-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,Roboto,sans-serif;
+    display:flex; flex-direction:column; height:100dvh; -webkit-font-smoothing:antialiased;
+  }
+  ::-webkit-scrollbar{width:10px;height:10px}
+  ::-webkit-scrollbar-thumb{background:var(--line-2);border-radius:20px;border:3px solid transparent;background-clip:content-box}
+
+  /* Header */
+  header {
+    display:flex; align-items:center; gap:12px; padding:14px 20px;
+    border-bottom:1px solid var(--line); backdrop-filter:blur(12px);
+    background:rgba(14,14,16,.6); position:sticky; top:0; z-index:10;
+  }
+  .brand { display:flex; align-items:center; gap:11px; }
+  .mark {
+    width:34px; height:34px; border-radius:11px; display:grid; place-items:center;
+    font-size:18px; background:linear-gradient(145deg,var(--accent),#5b3bd6);
+    box-shadow:0 6px 18px -6px var(--accent); 
+  }
+  .brand b { font-size:15px; letter-spacing:.4px; font-weight:650; }
+  .brand span { display:block; font-size:11.5px; color:var(--faint); margin-top:-2px; }
+  .spacer { flex:1; }
+  .icon-btn {
+    width:36px; height:36px; border-radius:10px; border:1px solid var(--line-2);
+    background:var(--panel); color:var(--muted); cursor:pointer; font-size:15px;
+    display:grid; place-items:center; transition:.15s;
+  }
+  .icon-btn:hover { color:var(--text); border-color:var(--accent); }
+
+  /* Chat */
+  main { flex:1; overflow-y:auto; scroll-behavior:smooth; }
+  .wrap { max-width:780px; margin:0 auto; padding:26px 20px 30px; }
+  .row { display:flex; margin-bottom:18px; animation:rise .35s cubic-bezier(.2,.8,.2,1); }
+  .row.me { justify-content:flex-end; }
+  @keyframes rise { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
+  .bubble {
+    max-width:82%; padding:12px 15px; border-radius:16px; white-space:pre-wrap;
+    word-break:break-word; font-size:14.5px; text-align:start; unicode-bidi:plaintext;
+  }
+  .me .bubble {
+    background:linear-gradient(145deg,var(--accent),#5f3ed6); color:#fff;
+    border-bottom-right-radius:5px; box-shadow:0 8px 22px -10px var(--accent);
+  }
+  .bot .bubble {
+    background:var(--panel); border:1px solid var(--line); border-bottom-left-radius:5px;
+  }
+  /* rendered markdown inside bot bubbles */
+  .bubble.md { white-space:normal; }
+  .bubble.md p { margin:0 0 8px; }
+  .bubble.md p:last-child, .bubble.md ul:last-child, .bubble.md ol:last-child,
+  .bubble.md pre:last-child { margin-bottom:0; }
+  .bubble.md strong { font-weight:700; }
+  .bubble.md em { font-style:italic; }
+  .bubble.md code {
+    background:rgba(255,255,255,.08); border:1px solid var(--line); padding:1px 6px;
+    border-radius:6px; font-size:13px; direction:ltr; unicode-bidi:embed;
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+  }
+  .bubble.md pre {
+    background:#101012; border:1px solid var(--line); padding:11px 13px; margin:8px 0;
+    border-radius:10px; overflow-x:auto; direction:ltr; text-align:left;
+  }
+  .bubble.md pre code { background:none; border:0; padding:0; font-size:12.5px; }
+  .bubble.md ul, .bubble.md ol { margin:4px 0 8px; padding-inline-start:22px; }
+  .bubble.md li { margin:2px 0; }
+  .bubble.md h4 { margin:10px 0 6px; font-size:15px; }
+  .bubble.md a { color:var(--accent-2); }
+
+  /* Live steps */
+  .steps {
+    max-width:82%; margin:-6px 0 18px; border:1px solid var(--line);
+    background:var(--bg-soft); border-radius:14px; overflow:hidden;
+  }
+  .steps summary {
+    list-style:none; cursor:pointer; padding:9px 13px; font-size:12.5px; color:var(--muted);
+    display:flex; align-items:center; gap:8px; user-select:none;
+  }
+  .steps summary::-webkit-details-marker{display:none}
+  .steps[open] summary { border-bottom:1px solid var(--line); }
+  .steps .body { padding:6px 13px 11px; }
+  .step { display:flex; gap:9px; align-items:baseline; font-size:12.5px; padding:3px 0; color:var(--muted);
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace; animation:rise .25s ease; }
+  .step .d { font-family:Vazirmatn,-apple-system,'Segoe UI',sans-serif; unicode-bidi:plaintext; text-align:start; }
+  .step .t { color:var(--faint); min-width:42px; }
+  .step.ok .d { color:var(--ok); }
+  .step.error .d { color:var(--err); }
+  .dot { width:7px;height:7px;border-radius:50%;background:var(--accent);flex:none;
+    box-shadow:0 0 0 4px var(--accent-soft); align-self:center; }
+
+  /* Typing indicator */
+  .typing { display:inline-flex; gap:4px; padding:4px 2px; }
+  .typing i { width:7px;height:7px;border-radius:50%;background:var(--muted);
+    animation:blink 1.2s infinite both; }
+  .typing i:nth-child(2){animation-delay:.2s}
+  .typing i:nth-child(3){animation-delay:.4s}
+  @keyframes blink{0%,80%,100%{opacity:.25;transform:translateY(0)}40%{opacity:1;transform:translateY(-3px)}}
+
+  /* Empty state */
+  .hero { text-align:center; padding:8vh 10px 4vh; }
+  .hero .big { width:64px;height:64px;border-radius:20px;margin:0 auto 18px;display:grid;place-items:center;
+    font-size:32px;background:linear-gradient(145deg,var(--accent),#5b3bd6);box-shadow:0 14px 36px -12px var(--accent); }
+  .hero h1 { font-size:24px; margin:0 0 6px; letter-spacing:.2px; }
+  .hero p { color:var(--muted); margin:0 auto 26px; max-width:420px; font-size:14px; }
+  .chips { display:flex; flex-wrap:wrap; gap:9px; justify-content:center; max-width:600px; margin:0 auto; }
+  .chip {
+    padding:9px 14px; border-radius:12px; border:1px solid var(--line-2); background:var(--panel);
+    color:var(--muted); font-size:13px; cursor:pointer; transition:.15s;
+  }
+  .chip:hover { color:var(--text); border-color:var(--accent); background:var(--accent-soft); transform:translateY(-1px); }
+
+  /* Composer */
+  footer { padding:14px 20px 22px; }
+  .composer {
+    max-width:780px; margin:0 auto; display:flex; align-items:flex-end; gap:10px;
+    background:var(--panel); border:1px solid var(--line-2); border-radius:20px;
+    padding:8px 8px 8px 16px; box-shadow:var(--shadow); transition:border-color .15s;
+  }
+  .composer:focus-within { border-color:var(--accent); }
+  textarea {
+    flex:1; resize:none; border:0; outline:0; background:transparent; color:var(--text);
+    font:inherit; padding:8px 0; max-height:180px; line-height:1.5;
+  }
+  textarea::placeholder{color:var(--faint)}
+  .send {
+    width:40px;height:40px;border:0;border-radius:13px;cursor:pointer;flex:none;
+    background:linear-gradient(145deg,var(--accent),#5b3bd6); color:#fff; font-size:17px;
+    display:grid;place-items:center; transition:.15s; box-shadow:0 8px 20px -8px var(--accent);
+  }
+  .send:hover{filter:brightness(1.08)} .send:disabled{opacity:.45;cursor:default;filter:grayscale(.4)}
+  .send.stop{ background:linear-gradient(145deg,var(--err),#c0392b); box-shadow:0 8px 20px -8px var(--err); }
+  .hint { max-width:780px; margin:8px auto 0; text-align:center; color:var(--faint); font-size:11.5px; }
+
+  /* Settings sheet */
+  .sheet-bg { position:fixed; inset:0; background:rgba(0,0,0,.5); backdrop-filter:blur(3px);
+    opacity:0; pointer-events:none; transition:.2s; z-index:40; }
+  .sheet-bg.on { opacity:1; pointer-events:auto; }
+  .sheet {
+    position:fixed; z-index:50; top:50%; left:50%; transform:translate(-50%,-46%) scale(.96);
+    width:min(420px,92vw); background:var(--panel); border:1px solid var(--line-2);
+    border-radius:20px; padding:22px; box-shadow:var(--shadow); opacity:0; pointer-events:none; transition:.2s;
+  }
+  .sheet.on { opacity:1; pointer-events:auto; transform:translate(-50%,-50%) scale(1); }
+  .sheet h3 { margin:0 0 16px; font-size:16px; }
+  .field { margin-bottom:15px; }
+  .field label { display:block; font-size:12.5px; color:var(--muted); margin-bottom:6px; }
+  .field input[type=text],.field input[type=password] {
+    width:100%; padding:11px 13px; border-radius:12px; border:1px solid var(--line-2);
+    background:var(--panel-2); color:var(--text); font:inherit; outline:0;
+  }
+  .field input:focus{border-color:var(--accent)}
+  .toggle { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+  .toggle small{color:var(--faint);display:block;font-size:11.5px}
+  .switch{position:relative;width:44px;height:26px;flex:none}
+  .switch input{display:none}
+  .switch span{position:absolute;inset:0;background:var(--panel-2);border:1px solid var(--line-2);
+    border-radius:20px;transition:.2s;cursor:pointer}
+  .switch span::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;
+    background:var(--muted);transition:.2s}
+  .switch input:checked + span{background:var(--accent-soft);border-color:var(--accent)}
+  .switch input:checked + span::after{transform:translateX(18px);background:var(--accent)}
+  .sheet .close{width:100%;margin-top:8px;padding:11px;border-radius:12px;border:0;
+    background:var(--accent);color:#fff;font:inherit;font-weight:600;cursor:pointer}
+  .sheet .ghost{width:100%;padding:11px;border-radius:12px;border:1px solid var(--line-2);
+    background:var(--panel-2);color:var(--muted);font:inherit;cursor:pointer;transition:.15s}
+  .sheet .ghost:hover{color:var(--err);border-color:var(--err)}
+</style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <div class="mark">🕊</div>
+      <div><b>HOMA</b><span>autonomous assistant</span></div>
+    </div>
+    <div class="spacer"></div>
+    <button class="icon-btn" id="newBtn" title="New chat">✎</button>
+    <button class="icon-btn" id="gearBtn" title="Settings">⚙</button>
+  </header>
+
+  <main id="main">
+    <div class="wrap" id="chat">
+      <div class="hero" id="hero">
+        <div class="big">🕊</div>
+        <h1>How can I help?</h1>
+        <p>Give me a command in plain language — I can browse the web, control this computer, check mail, remember things, and run tasks on a schedule.</p>
+        <div class="chips" id="chips"></div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="composer">
+      <textarea id="input" rows="1" dir="auto" placeholder="Message HOMA…"></textarea>
+      <button class="send" id="send" title="Send">↑</button>
+    </div>
+    <div class="hint">Enter to send · Shift+Enter for a new line</div>
+  </footer>
+
+  <!-- Settings -->
+  <div class="sheet-bg" id="sheetBg"></div>
+  <div class="sheet" id="sheet">
+    <h3>Settings</h3>
+    <div class="field">
+      <label>Access token (WEB_AUTH_TOKEN)</label>
+      <input type="password" id="token" placeholder="paste your token" />
+    </div>
+    <div class="field toggle">
+      <div><label style="margin:0">Auto-confirm actions</label>
+        <small>Run shell / file-write / send-mail without asking</small></div>
+      <label class="switch"><input type="checkbox" id="auto" /><span></span></label>
+    </div>
+    <div class="field">
+      <button class="ghost" id="forgetBtn">🧹 Clear conversation memory</button>
+    </div>
+    <button class="close" id="closeSheet">Done</button>
+  </div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const chat = $('chat'), main = $('main'), input = $('input'), send = $('send');
+  const token = $('token'), auto = $('auto');
+  let currentController = null;  // AbortController for the in-flight command
+  const SUGGESTIONS = [
+    'How much free space is on drive C?',
+    'Go to a news site and summarize today’s headlines',
+    'Check my inbox for mail from Ali',
+    'Open this survey and answer the questions',
+    'Every day at 9am tell me the USD price',
+    'Remember my home address is …',
+  ];
+
+  // restore settings
+  token.value = localStorage.getItem('homa_token') || '';
+  auto.checked = localStorage.getItem('homa_auto') === '1';
+  token.oninput = () => localStorage.setItem('homa_token', token.value);
+  auto.onchange = () => localStorage.setItem('homa_auto', auto.checked ? '1' : '0');
+
+  // settings sheet
+  const openSheet = () => { $('sheet').classList.add('on'); $('sheetBg').classList.add('on'); };
+  const closeSheet = () => { $('sheet').classList.remove('on'); $('sheetBg').classList.remove('on'); };
+  $('gearBtn').onclick = openSheet; $('sheetBg').onclick = closeSheet; $('closeSheet').onclick = closeSheet;
+  $('newBtn').onclick = () => location.reload();
+
+  // clear conversation memory (server-side history for this session)
+  $('forgetBtn').onclick = async () => {
+    if(!token.value){ return; }
+    const b = $('forgetBtn'); const old = b.textContent;
+    try {
+      const r = await fetch('/api/forget', {
+        method:'POST',
+        headers:{'Content-Type':'application/json','Authorization':token.value},
+        body:JSON.stringify({session:'web'})
+      });
+      const j = await r.json();
+      b.textContent = '✓ پاک شد (' + (j.cleared ?? 0) + ')';
+    } catch(e){ b.textContent = 'خطا'; }
+    setTimeout(() => { b.textContent = old; }, 1800);
+  };
+
+  // suggestion chips
+  const chips = $('chips');
+  SUGGESTIONS.forEach(s => {
+    const c = document.createElement('div'); c.className = 'chip'; c.textContent = s;
+    c.onclick = () => { input.value = s; input.focus(); autosize(); };
+    chips.appendChild(c);
+  });
+
+  // textarea autosize
+  function autosize(){ input.style.height='auto'; input.style.height=Math.min(input.scrollHeight,180)+'px'; }
+  input.addEventListener('input', autosize);
+
+  function scrollDown(){ main.scrollTop = main.scrollHeight; }
+  function hideHero(){ const h=$('hero'); if(h) h.remove(); }
+
+  function addRow(text, who){
+    const row=document.createElement('div'); row.className='row '+who;
+    const b=document.createElement('div'); b.className='bubble'; b.setAttribute('dir','auto'); b.textContent=text;
+    row.appendChild(b); chat.appendChild(row); scrollDown(); return b;
+  }
+
+  function makeSteps(){
+    const d=document.createElement('details'); d.className='steps'; d.open=true;
+    d.innerHTML='<summary><span class="dot"></span><span class="cap">Working…</span></summary><div class="body"></div>';
+    chat.appendChild(d); scrollDown();
+    return { el:d, body:d.querySelector('.body'), cap:d.querySelector('.cap') };
+  }
+  function addStep(box, s){
+    const row=document.createElement('div'); row.className='step '+(s.level||'info');
+    row.innerHTML='<span class="t">'+s.t+'s</span><span class="d" dir="auto">'+escapeHtml(s.msg)+'</span>';
+    box.body.appendChild(row); scrollDown();
+  }
+  function escapeHtml(x){ return (x||'').replace(/[&<>]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+
+  // Tiny markdown renderer: bold, italic, code, links, lists, headings, code blocks.
+  function renderMd(src){
+    let s=escapeHtml(src);
+    const blocks=[];
+    s=s.replace(/```(\w*)\n?([\s\S]*?)```/g,(m,l,c)=>{
+      blocks.push('<pre><code>'+c.replace(/\n$/,'')+'</code></pre>');
+      return '\u0000'+(blocks.length-1)+'\u0000';
+    });
+    s=s.replace(/`([^`\n]+)`/g,'<code>$1</code>');
+    s=s.replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>');
+    s=s.replace(/(^|[\s(«])\*([^*\n]+)\*/g,'$1<em>$2</em>');
+    s=s.replace(/\[([^\]]+)\]\((https?:[^)\s]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>');
+    const out=[]; let list=null;
+    for(const ln of s.split('\n')){
+      const ph=ln.match(/^\u0000(\d+)\u0000$/);
+      if(ph){ if(list){out.push('</'+list+'>');list=null;} out.push(blocks[+ph[1]]); continue; }
+      const li=ln.match(/^\s*(?:[-*\u2022]|\d+[.)])\s+(.*)/);
+      const h=ln.match(/^#{1,4}\s+(.*)/);
+      if(li){
+        const t=/^\s*\d/.test(ln)?'ol':'ul';
+        if(list!==t){ if(list)out.push('</'+list+'>'); out.push('<'+t+' dir="auto">'); list=t; }
+        out.push('<li dir="auto">'+li[1]+'</li>');
+      } else {
+        if(list){out.push('</'+list+'>');list=null;}
+        if(h) out.push('<h4 dir="auto">'+h[1]+'</h4>');
+        else if(ln.trim()!=='') out.push('<p dir="auto">'+ln+'</p>');
+      }
+    }
+    if(list)out.push('</'+list+'>');
+    return out.join('').replace(/\u0000(\d+)\u0000/g,(m,i)=>blocks[+i]);
+  }
+
+  function setSending(on){
+    if(on){ send.classList.add('stop'); send.textContent='■'; send.title='Stop'; }
+    else { send.classList.remove('stop'); send.textContent='↑'; send.title='Send'; }
+    send.disabled=false;
+  }
+
+  async function submit(){
+    if(currentController) return;  // one command at a time
+    const command=input.value.trim(); if(!command) return;
+    if(!token.value){ openSheet(); return; }
+    hideHero();
+    addRow(command,'me');
+    input.value=''; autosize();
+    const controller=new AbortController(); currentController=controller; setSending(true);
+
+    const steps=makeSteps();
+    const botRow=document.createElement('div'); botRow.className='row bot';
+    const bubble=document.createElement('div'); bubble.className='bubble'; bubble.setAttribute('dir','auto');
+    bubble.innerHTML='<span class="typing"><i></i><i></i><i></i></span>';
+    botRow.appendChild(bubble); chat.appendChild(botRow); scrollDown();
+
+    try {
+      const res=await fetch('/api/stream',{
+        method:'POST',
+        headers:{'Content-Type':'application/json','Authorization':token.value},
+        body:JSON.stringify({command,session:'web',auto_confirm:auto.checked}),
+        signal:controller.signal
+      });
+      if(!res.ok){ bubble.textContent = res.status===401 ? '🔒 Invalid token — open settings.' : ('Error '+res.status); }
+      else {
+        const reader=res.body.getReader(); const dec=new TextDecoder(); let buf='';
+        let final=null;
+        while(true){
+          const {value,done}=await reader.read(); if(done) break;
+          buf+=dec.decode(value,{stream:true});
+          const parts=buf.split('\n\n'); buf=parts.pop();
+          for(const p of parts){
+            const line=p.trim(); if(!line.startsWith('data:')) continue;
+            const data=JSON.parse(line.slice(5).trim());
+            if(data.type==='step') addStep(steps,data);
+            else if(data.type==='final') final=data.result;
+          }
+        }
+        bubble.classList.add('md'); bubble.innerHTML = renderMd(final || 'Done.');
+      }
+    } catch(e){
+      if(e.name==='AbortError'){ bubble.classList.remove('md'); bubble.textContent='⏹ متوقف شد.'; }
+      else { bubble.textContent='Error: '+e; }
+    } finally {
+      currentController=null; setSending(false);
+    }
+    steps.el.open=false; steps.cap.textContent='Steps'; scrollDown();
+  }
+
+  send.onclick=()=>{ if(currentController){ currentController.abort(); } else { submit(); } };
+  input.addEventListener('keydown',e=>{ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); submit(); }});
+  input.focus();
+</script>
+</body>
+</html>

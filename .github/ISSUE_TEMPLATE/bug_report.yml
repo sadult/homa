@@ -1,0 +1,57 @@
+name: "\U0001F41B Bug report"
+description: Something in HOMA misbehaves
+title: "[bug]: "
+labels: ["bug", "needs triage"]
+body:
+  - type: markdown
+    attributes:
+      value: "Thanks for the report! Please never paste API keys, tokens or mail passwords."
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you expect, and what did HOMA do instead?
+    validations:
+      required: true
+  - type: textarea
+    id: command
+    attributes:
+      label: The command you gave HOMA
+      placeholder: "open example.com and download the invoice"
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Step log / traceback
+      description: The step list from the UI or the terminal output.
+      render: shell
+  - type: dropdown
+    id: interface
+    attributes:
+      label: Interface
+      options: [Telegram, Web dashboard, CLI, Scheduled job]
+    validations:
+      required: true
+  - type: input
+    id: model
+    attributes:
+      label: Model and endpoint
+      placeholder: "gpt-4o-mini via 9Router (http://localhost:20128/v1)"
+    validations:
+      required: true
+  - type: input
+    id: env
+    attributes:
+      label: OS and Python version
+      placeholder: "Windows 11 · Python 3.12.3"
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Sanity checks
+      options:
+        - label: "`python main.py check` succeeds"
+        - label: "I ran `playwright install chromium`"
+        - label: "I am on the latest `main`"

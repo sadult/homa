@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: "\U0001F4AC Questions & ideas"
+    url: https://github.com/sadult/homa/discussions
+    about: Ask how to set something up, or share a plugin you built.
+  - name: "\U0001F512 Report a security vulnerability"
+    url: https://github.com/sadult/homa/security/advisories/new
+    about: Please report vulnerabilities privately, not as public issues.
+  - name: "\U0001F4D6 Setup guide"
+    url: https://github.com/sadult/homa/blob/main/docs/SETUP.md
+    about: Installation, configuration and troubleshooting.
